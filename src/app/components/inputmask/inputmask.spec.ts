@@ -261,4 +261,109 @@ describe('InputMask', () => {
         expect(document.activeElement).not.toEqual(inputmask.inputViewChild.nativeElement);
         expect(updateModelSpy).not.toHaveBeenCalled();
     });
+
+    it('should be readonly and not update model on key events', () => {
+        inputmask.readonly = true;
+        fixture.detectChanges();
+    
+        const inputMaskEl = fixture.debugElement.query(By.css('input'));
+        const updateModelSpy = spyOn(inputmask, 'updateModel').and.callThrough();
+    
+        inputMaskEl.nativeElement.dispatchEvent(new Event('focus'));
+        fixture.detectChanges();
+    
+        expect(document.activeElement).not.toEqual(inputMaskEl.nativeElement);
+        expect(updateModelSpy).not.toHaveBeenCalled();
+    });
+
+    it('should handle focus and blur events', () => {
+        inputmask.mask = '99-999999';
+        fixture.detectChanges();
+    
+        const inputMaskEl = fixture.debugElement.query(By.css('input'));
+        inputMaskEl.nativeElement.dispatchEvent(new Event('focus'));
+        fixture.detectChanges();
+
+        expect(inputMaskEl.parent.nativeElement.className).toContain('p-inputwrapper-focus');
+    
+        inputMaskEl.nativeElement.dispatchEvent(new Event('blur'));
+        fixture.detectChanges();
+    
+        expect(inputMaskEl.parent.nativeElement.className).not.toContain('p-inputwrapper-focus');
+    });
+    
+    it('should handle input blur correctly', () => {
+        inputmask.mask = '99-999999';
+        const onInputBlurSpy = spyOn(inputmask, 'onInputBlur').and.callThrough();
+        let mockValue = '12-345678';
+        let inputMaskEl = fixture.debugElement.query(By.css('input'));
+        inputmask.writeValue(mockValue);
+        inputMaskEl.nativeElement.dispatchEvent(new Event('blur'));
+        fixture.detectChanges();
+    
+        expect(onInputBlurSpy).toHaveBeenCalled();
+    });
+    
+    it('should handle input focus correctly', () => {
+        inputmask.mask = '99-999999';
+        const onInputFocusSpy = spyOn(inputmask, 'onInputFocus').and.callThrough();
+        let inputMaskEl = fixture.debugElement.query(By.css('input'));
+        inputMaskEl.nativeElement.focus();
+        inputMaskEl.nativeElement.dispatchEvent(new Event('focus'));
+        fixture.detectChanges();
+    
+        expect(onInputFocusSpy).toHaveBeenCalled();
+    });
+    
+    it('should handle input change correctly', () => {
+        inputmask.mask = '99-999999';
+        const onInputChangeSpy = spyOn(inputmask, 'onInputChange').and.callThrough();
+        let mockValue = '12-345678';
+        let inputMaskEl = fixture.debugElement.query(By.css('input'));
+        inputmask.writeValue(mockValue);
+        inputMaskEl.nativeElement.dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+    
+        expect(onInputChangeSpy).toHaveBeenCalled();
+    });
+    
+    it('should handle input keydown correctly', () => {
+        inputmask.mask = '99-999999';
+        const onInputKeydownSpy = spyOn(inputmask, 'onInputKeydown').and.callThrough();
+        let inputMaskEl = fixture.debugElement.query(By.css('input'));
+        inputmask.writeValue('12-345678');
+        const event: any = document.createEvent('CustomEvent');
+        event.which = 53;
+        event.initEvent('keydown', true, true);
+        inputMaskEl.nativeElement.dispatchEvent(event as KeyboardEvent);
+        fixture.detectChanges();
+    
+        expect(onInputKeydownSpy).toHaveBeenCalled();
+    });
+    
+    it('should not update ngModel on input value change when disabled', () => {
+        inputmask.mask = '999-99';
+        inputmask.setDisabledState(true);
+        fixture.detectChanges();
+    
+        const inputMaskEl = fixture.debugElement.query(By.css('input'));
+        inputMaskEl.nativeElement.value = '12345';
+        inputMaskEl.nativeElement.dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+    
+        expect(testComponent.val).toBeUndefined();
+    });
+    
+    it('should not update ngModel on input value change when readonly', () => {
+        inputmask.mask = '999-99';
+        inputmask.readonly = true;
+        fixture.detectChanges();
+    
+        const inputMaskEl = fixture.debugElement.query(By.css('input'));
+        inputMaskEl.nativeElement.value = '12345';
+        inputMaskEl.nativeElement.dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+    
+        expect(testComponent.val).toBeUndefined();
+    });
 });
